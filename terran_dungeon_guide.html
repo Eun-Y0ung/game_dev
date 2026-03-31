@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>통제구역 404: 커맨드 센터 | DUNGEON BRIEFING</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/gh/webfontworld/gmarket/GmarketSans.css" rel="stylesheet" />
+
+  <style>
+    /* ============================================================
+       CSS VARIABLES — Edit colors / fonts here
+       ============================================================ */
+    :root {
+      --bg-primary:    #0b0f1a;
+      --bg-secondary:  #0d1520;
+      --bg-panel:      #0f1c2e;
+      --blue-neon:     #00d4ff;
+      --blue-mid:      #0088bb;
+      --blue-dark:     #00334d;
+      --cyan:          #00ffcc;
+      --cyan-dim:      #00997a;
+      --steel:         #7a96b0;
+      --steel-light:   #c5d8ea;
+      --steel-dark:    #2e3e50;
+      --red-alert:     #ff4455;
+      --yellow-warn:   #ffc800;
+      --green-ok:      #3dffa0;
+      --text-primary:  #ddeeff;
+      --border-panel:  rgba(0, 136, 187, 0.55);
+      --glow-blue:     rgba(0, 212, 255, 0.35);
+      --glow-cyan:     rgba(0, 255, 204, 0.3);
+      --font-title:    'GmarketSans', 'Orbitron', sans-serif;
+      --font-body:     'Noto Sans KR', sans-serif;
+      --font-mono:     'Share Tech Mono', monospace;
+    }
+
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* Scanline texture overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 3px,
+        rgba(0,0,0,0.04) 3px,
+        rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 9000;
+    }
+
+    /* Grid background */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,136,187,0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,136,187,0.06) 1px, transparent 1px);
+      background-size: 44px 44px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       TOP STATUS BAR
+       ============================================================ */
+    .status-bar {
+      position: sticky; top: 0; z-index: 500;
+      background: rgba(11, 15, 26, 0.96);
+      border-bottom: 1px solid var(--border-panel);
+      backdrop-filter: blur(10px);
+      padding: 0 28px;
+      height: 44px;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px;
+    }
+
+    .sb-left  { display: flex; align-items: center; gap: 20px; }
+    .sb-right { display: flex; align-items: center; gap: 18px; flex-shrink: 0; }
+
+    .sys-logo {
+      font-family: var(--font-title);
+      font-size: 13px;
+      letter-spacing: 4px;
+      color: var(--blue-neon);
+      text-shadow: 0 0 12px var(--blue-neon);
+      white-space: nowrap;
+    }
+
+    .status-indicators {
+      display: flex; gap: 14px; align-items: center;
+    }
+
+    .indicator {
+      display: flex; align-items: center; gap: 6px;
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--steel); letter-spacing: 1px;
+    }
+
+    .dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-green  { background: var(--green-ok);    box-shadow: 0 0 6px var(--green-ok);    animation: pulse 2.2s ease-in-out infinite; }
+    .dot-blue   { background: var(--blue-neon);   box-shadow: 0 0 6px var(--blue-neon);   animation: pulse 2.2s ease-in-out infinite 0.7s; }
+    .dot-yellow { background: var(--yellow-warn); box-shadow: 0 0 6px var(--yellow-warn); animation: pulse 2.2s ease-in-out infinite 1.4s; }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0.35; }
+    }
+
+    .sys-time {
+      font-family: var(--font-mono); font-size: 12px;
+      color: var(--blue-neon); letter-spacing: 2px;
+    }
+
+    .btn-sound {
+      background: transparent;
+      border: 1px solid var(--border-panel);
+      color: var(--steel);
+      font-family: var(--font-mono); font-size: 10px;
+      padding: 5px 12px; letter-spacing: 2px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-sound:hover {
+      border-color: var(--blue-neon); color: var(--blue-neon);
+      box-shadow: 0 0 8px var(--glow-blue);
+    }
+
+    /* ============================================================
+       PAGE LAYOUT
+       ============================================================ */
+    .page-wrapper {
+      position: relative; z-index: 1;
+      max-width: 1380px; margin: 0 auto;
+      padding: 0 28px 72px;
+    }
+
+    /* ============================================================
+       HERO SECTION
+       ============================================================ */
+    .hero {
+      padding: 56px 0 48px;
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 48px; align-items: center;
+    }
+
+    /* — Left column — */
+    .hero-eyebrow {
+      display: inline-block;
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--cyan); border: 1px solid var(--cyan-dim);
+      padding: 3px 12px; letter-spacing: 4px;
+      margin-bottom: 18px;
+    }
+
+    .hero-title {
+      font-family: var(--font-title);
+      font-size: clamp(22px, 2.8vw, 40px);
+      font-weight: 900; line-height: 1.08;
+      color: var(--text-primary);
+      margin-bottom: 36px;
+      animation: titleGlitch 6s ease-in-out infinite;
+    }
+    .hero-title .hi { color: var(--blue-neon); text-shadow: 0 0 22px var(--blue-neon); }
+
+    @keyframes titleGlitch {
+      0%, 97%, 100% { text-shadow: 0 0 28px rgba(0,212,255,0.35); }
+      98%            { text-shadow: 3px 0 28px rgba(0,212,255,0.35), -2px 0 rgba(255,0,80,0.25); }
+      99%            { text-shadow: -3px 0 28px rgba(0,212,255,0.35), 2px 0 rgba(0,255,204,0.25); }
+    }
+
+    .hero-kicker {
+      font-family: var(--font-mono); font-size: 14px;
+      color: var(--steel); letter-spacing: 5px;
+      text-transform: uppercase; margin-bottom: 22px;
+    }
+
+    .hero-rule {
+      width: 100%; height: 1px;
+      background: linear-gradient(90deg, var(--blue-neon), transparent);
+      margin-bottom: 20px;
+    }
+
+    .hero-story {
+      font-size: 15px; line-height: 1.85;
+      color: var(--steel-light); margin-bottom: 36px;
+      white-space: pre-line;
+    }
+
+    .btn-cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: transparent;
+      border: 2px solid var(--blue-neon);
+      color: var(--blue-neon);
+      font-family: var(--font-title); font-size: 12px;
+      padding: 15px 30px; letter-spacing: 3px;
+      cursor: pointer; text-transform: uppercase;
+      position: relative; overflow: hidden;
+      transition: all 0.35s;
+    }
+    .btn-cta::after {
+      content: '';
+      position: absolute; top: 0; left: -110%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(0,212,255,0.18), transparent);
+      transition: left 0.5s;
+    }
+    .btn-cta:hover::after { left: 110%; }
+    .btn-cta:hover {
+      background: rgba(0,212,255,0.08);
+      box-shadow: 0 0 22px var(--glow-blue), inset 0 0 22px rgba(0,212,255,0.06);
+      transform: translateY(-2px);
+    }
+    .btn-cta .arrow { font-size: 18px; transition: transform 0.3s; }
+    .btn-cta:hover .arrow { transform: translateX(5px); }
+
+    /* — Right column briefing panel — */
+    .briefing-panel {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      border-left: 3px solid var(--blue-neon);
+      padding: 26px;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,136,187,0.08), inset 0 0 30px rgba(0,136,187,0.025);
+      animation: panelPulse 5s ease-in-out infinite;
+    }
+    .briefing-panel::before {
+      content: '';
+      position: absolute; top: -1px; left: -1px; right: -1px; height: 2px;
+      background: linear-gradient(90deg, var(--blue-neon), var(--cyan), transparent);
+    }
+
+    @keyframes panelPulse {
+      0%, 100% { border-left-color: var(--blue-neon); }
+      50%       { border-left-color: var(--cyan); }
+    }
+
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 22px; padding-bottom: 14px;
+      border-bottom: 1px solid rgba(0,136,187,0.25);
+    }
+    .panel-label {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--blue-neon); letter-spacing: 3px;
+    }
+    .online-badge {
+      font-family: var(--font-mono); font-size: 9px;
+      color: var(--green-ok); border: 1px solid rgba(61,255,160,0.45);
+      padding: 2px 9px; letter-spacing: 2px;
+    }
+
+    .stat-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    .stat-cell {
+      padding: 14px;
+      background: rgba(0,136,187,0.045);
+      border: 1px solid rgba(0,136,187,0.2);
+      transition: all 0.3s;
+    }
+    .stat-cell:hover {
+      border-color: var(--blue-neon);
+      box-shadow: 0 0 12px var(--glow-blue);
+    }
+    .stat-label {
+      font-family: var(--font-mono); font-size: 9px;
+      color: var(--steel); letter-spacing: 2.5px;
+      text-transform: uppercase; margin-bottom: 7px;
+    }
+    .stat-value {
+      font-family: var(--font-title); font-size: 22px;
+      color: var(--blue-neon); text-shadow: 0 0 12px rgba(0,212,255,0.55);
+    }
+    .stat-unit {
+      font-family: var(--font-body); font-size: 12px;
+      color: var(--steel); margin-left: 4px;
+    }
+
+    /* ============================================================
+       SECTION DIVIDER
+       ============================================================ */
+    .sec-divider {
+      display: flex; align-items: center; gap: 18px;
+      margin: 44px 0 10px;
+    }
+    .sec-line        { flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-panel), transparent); }
+    .sec-line.right  { background: linear-gradient(90deg, transparent, var(--border-panel)); }
+    .sec-heading {
+      font-family: var(--font-title); font-size: 13px;
+      color: var(--blue-neon); letter-spacing: 5px;
+      text-transform: uppercase; white-space: nowrap;
+    }
+    .sec-subheading {
+      font-family: var(--font-mono); font-size: 11px;
+      color: var(--steel); letter-spacing: 2px;
+      text-align: center; margin-bottom: 28px;
+    }
+
+    /* ============================================================
+       CHAPTER CARD GRID
+       ============================================================ */
+    .chapter-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+    }
+
+    .chapter-card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-panel);
+      padding: 26px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .chapter-card::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(0,212,255,0.06) 0%, transparent 55%);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .chapter-card::after {
+      content: '';
+      position: absolute; top: -1px; left: -1px; right: -1px; height: 2px;
+      background: transparent; transition: background 0.3s;
+    }
+    .chapter-card:hover::before { opacity: 1; }
+    .chapter-card:hover::after  { background: linear-gradient(90deg, var(--blue-neon), var(--cyan)); }
+    .chapter-card:hover {
+      border-color: var(--blue-neon);
+      box-shadow: 0 0 28px rgba(0,212,255,0.14), inset 0 0 28px rgba(0,212,255,0.025);
+      transform: translateY(-3px);
+    }
+
+    .card-bg-num {
+      position: absolute; right: 18px; top: 12px;
+      font-family: var(--font-title); font-size: 48px; font-weight: 900;
+      color: rgba(0,136,187,0.13); line-height: 1;
+      transition: color 0.3s; pointer-events: none; user-select: none;
+    }
+    .chapter-card:hover .card-bg-num { color: rgba(0,212,255,0.12); }
+
+    .card-icon-wrap {
+      width: 46px; height: 46px;
+      background: rgba(0,136,187,0.1); border: 1px solid var(--border-panel);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 14px;
+      transition: all 0.3s;
+    }
+    .chapter-card:hover .card-icon-wrap {
+      border-color: var(--blue-neon);
+      box-shadow: 0 0 12px var(--glow-blue);
+      background: rgba(0,212,255,0.1);
+    }
+
+    .card-tag {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--cyan); letter-spacing: 3px; margin-bottom: 8px;
+    }
+    .card-title {
+      font-family: var(--font-title); font-size: 18px; font-weight: 700;
+      color: var(--text-primary); line-height: 1.2; margin-bottom: 10px;
+    }
+    .card-desc {
+      font-size: 13px; color: var(--steel); line-height: 1.65;
+      margin-bottom: 18px;
+    }
+    .card-badges { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .badge {
+      font-family: var(--font-mono); font-size: 9px;
+      padding: 3px 9px; border: 1px solid; letter-spacing: 1.5px;
+    }
+    .badge-easy    { color: var(--green-ok);    border-color: rgba(61,255,160,0.4); }
+    .badge-normal  { color: var(--yellow-warn); border-color: rgba(255,200,0,0.4); }
+    .badge-hard    { color: #ff8c44;            border-color: rgba(255,140,68,0.4); }
+    .badge-extreme { color: var(--red-alert);   border-color: rgba(255,68,85,0.4); }
+    .badge-neutral { color: var(--steel);       border-color: rgba(122,150,176,0.35); }
+
+    .card-enter {
+      margin-top: 18px;
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--blue-neon); letter-spacing: 2px;
+      opacity: 0; transform: translateY(6px);
+      transition: all 0.3s;
+    }
+    .chapter-card:hover .card-enter { opacity: 1; transform: translateY(0); }
+
+    /* ============================================================
+       MODAL
+       ============================================================ */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.82);
+      z-index: 800; align-items: center; justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(5px);
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-panel);
+      width: 100%; max-width: 880px; max-height: 90vh;
+      display: flex; flex-direction: column;
+      position: relative;
+      animation: modalDrop 0.28s ease;
+    }
+    .modal-box::before {
+      content: '';
+      position: absolute; top: -1px; left: -1px; right: -1px; height: 2px;
+      background: linear-gradient(90deg, var(--blue-neon), var(--cyan), transparent);
+    }
+
+    @keyframes modalDrop {
+      from { opacity: 0; transform: translateY(-18px) scale(0.97); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    .modal-head {
+      padding: 20px 26px;
+      border-bottom: 1px solid rgba(0,136,187,0.28);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; gap: 16px;
+    }
+    .modal-head-info { display: flex; align-items: center; gap: 16px; }
+    .modal-icon-box {
+      width: 50px; height: 50px;
+      background: rgba(0,136,187,0.14); border: 1px solid var(--border-panel);
+      display: flex; align-items: center; justify-content: center; font-size: 24px;
+      flex-shrink: 0;
+    }
+    .modal-tag  { font-family: var(--font-mono); font-size: 10px; color: var(--cyan); letter-spacing: 3px; margin-bottom: 5px; }
+    .modal-name { font-family: var(--font-title); font-size: 20px; font-weight: 700; color: var(--text-primary); }
+
+    .btn-close {
+      width: 38px; height: 38px; flex-shrink: 0;
+      background: transparent;
+      border: 1px solid rgba(255,68,85,0.4); color: var(--red-alert);
+      font-size: 16px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .btn-close:hover {
+      background: rgba(255,68,85,0.1);
+      box-shadow: 0 0 12px rgba(255,68,85,0.3);
+    }
+
+    /* Tabs */
+    .modal-tabs {
+      display: flex; border-bottom: 1px solid rgba(0,136,187,0.28);
+      flex-shrink: 0; overflow-x: auto;
+    }
+    .m-tab {
+      background: transparent; border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--steel); font-family: var(--font-body);
+      font-size: 13px; font-weight: 600;
+      padding: 13px 22px; cursor: pointer;
+      letter-spacing: 1px; white-space: nowrap;
+      display: flex; align-items: center; gap: 7px;
+      transition: all 0.2s;
+    }
+    .m-tab:hover { color: var(--text-primary); background: rgba(0,136,187,0.05); }
+    .m-tab.active {
+      color: var(--blue-neon); border-bottom-color: var(--blue-neon);
+      background: rgba(0,212,255,0.05);
+    }
+    .t-icon { font-size: 15px; }
+
+    /* Modal body */
+    .modal-body { overflow-y: auto; flex: 1; padding: 28px; }
+
+    .tab-pane { display: none; animation: fadeUp 0.22s ease; }
+    .tab-pane.active { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* Content blocks */
+    .c-block {
+      background: rgba(0,136,187,0.04);
+      border: 1px solid rgba(0,136,187,0.18);
+      border-left: 3px solid var(--blue-neon);
+      padding: 22px; margin-bottom: 14px;
+    }
+    .c-block-title {
+      font-family: var(--font-mono); font-size: 10px;
+      color: var(--cyan); letter-spacing: 3px;
+      text-transform: uppercase; margin-bottom: 14px;
+    }
+    .c-block-text {
+      font-size: 15px; line-height: 1.85; color: var(--steel-light);
+    }
+
+    /* Monster list */
+    .monster-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .monster-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 13px; background: rgba(0,136,187,0.04);
+      border: 1px solid rgba(0,136,187,0.15); transition: all 0.2s;
+    }
+    .monster-row:hover { border-color: var(--blue-neon); box-shadow: 0 0 10px var(--glow-blue); }
+    .m-icon { font-size: 22px; }
+    .m-info { flex: 1; }
+    .m-name { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+    .m-desc { font-size: 12px; color: var(--steel); }
+    .m-threat {
+      font-family: var(--font-mono); font-size: 9px;
+      padding: 3px 9px; border: 1px solid; letter-spacing: 1.5px; white-space: nowrap;
+    }
+    .threat-low  { color: var(--green-ok);    border-color: rgba(61,255,160,0.4); }
+    .threat-mid  { color: var(--yellow-warn); border-color: rgba(255,200,0,0.4); }
+    .threat-high { color: #ff8c44;            border-color: rgba(255,140,68,0.4); }
+    .threat-boss { color: var(--red-alert);   border-color: rgba(255,68,85,0.4); }
+
+    /* Puzzle steps */
+    .puzzle-step {
+      display: flex; gap: 16px; align-items: flex-start;
+      padding: 16px; margin-bottom: 12px;
+      background: rgba(0,136,187,0.04); border: 1px solid rgba(0,136,187,0.15);
+    }
+    .step-num {
+      width: 34px; height: 34px; flex-shrink: 0;
+      background: var(--blue-dark); border: 1px solid var(--blue-neon);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 14px; color: var(--blue-neon);
+    }
+    .step-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; }
+    .step-desc  { font-size: 13px; color: var(--steel); line-height: 1.6; }
+
+    /* Tip list */
+    .tip-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .tip-row {
+      display: flex; gap: 14px;
+      padding: 14px 16px;
+      background: rgba(0,255,204,0.04); border: 1px solid rgba(0,255,204,0.14);
+    }
+    .tip-num  { font-family: var(--font-mono); font-size: 13px; color: var(--cyan); min-width: 26px; font-weight: bold; }
+    .tip-text { font-size: 14px; color: var(--steel-light); line-height: 1.65; }
+
+    /* ============================================================
+       FOOTER
+       ============================================================ */
+    .footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border-panel);
+      padding: 18px 28px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(11,15,26,0.85);
+    }
+    .footer-l { font-family: var(--font-mono); font-size: 10px; color: var(--steel-dark); letter-spacing: 2px; }
+    .footer-r { font-family: var(--font-mono); font-size: 10px; color: #1d3040; letter-spacing: 1px; }
+
+    /* ============================================================
+       SCROLLBAR
+       ============================================================ */
+    ::-webkit-scrollbar       { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: #0d3a54; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--blue-mid); }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 960px) {
+      .hero           { grid-template-columns: 1fr; }
+      .chapter-grid   { grid-template-columns: 1fr; }
+      .stat-grid      { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .status-indicators { display: none; }
+      .stat-grid          { grid-template-columns: 1fr 1fr; }
+      .modal-tabs         { overflow-x: auto; }
+      .page-wrapper       { padding: 0 14px 60px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       TOP STATUS BAR
+       ============================================================ -->
+  <div class="status-bar">
+    <div class="sb-left">
+      <div class="sys-logo">테란 던전 소개 가이드</div>
+      <div class="status-indicators">
+      </div>
+    </div>
+    <div class="sb-right">
+      <div class="indicator"><span class="dot dot-green"></span>시스템 온라인</div>
+      <div class="indicator"><span class="dot dot-blue"></span>데이터 동기화 중</div>
+      <div class="indicator"><span class="dot dot-yellow"></span>위협 감지됨</div>
+      <div class="sys-time" id="sysTime">00:00:00</div>
+      <button class="btn-sound" id="btnSound" onclick="toggleSound()">🔇&nbsp;사운드</button>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       PAGE WRAPPER
+       ============================================================ -->
+  <div class="page-wrapper">
+
+    <!-- HERO -->
+    <section class="hero" id="heroSection">
+
+      <!-- Left -->
+      <div class="hero-left">
+        <div class="hero-eyebrow">임무 브리핑 · MISSION BRIEFING</div>
+        <h1 class="hero-title">
+          <span class="hi">통제구역 404:</span> 커맨드 센터
+        </h1>
+        <div class="hero-rule"></div>
+        <p class="hero-story" id="heroStory"></p>
+        <button class="btn-cta" onclick="scrollToChapters()">
+          챕터별 미션 확인 <span class="arrow">→</span>
+        </button>
+      </div>
+
+      <!-- Right — briefing panel -->
+      <div class="hero-right">
+        <div class="briefing-panel">
+          <div class="panel-header">
+            <span class="panel-label">작전 개요 · MISSION STATS</span>
+            <span class="online-badge">● ONLINE</span>
+          </div>
+          <div class="stat-grid" id="statGrid"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- CHAPTER SECTION -->
+    <div class="sec-divider" id="chapterAnchor">
+      <div class="sec-line"></div>
+      <div class="sec-heading">챕터별 미션 확인</div>
+      <div class="sec-line right"></div>
+    </div>
+    <p class="sec-subheading">작전 구역을 선택하여 상세 정보를 확인하십시오</p>
+
+    <div class="chapter-grid" id="chapterGrid"></div>
+
+  </div><!-- /page-wrapper -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <span class="footer-l">26-1 회기동막걸리 온보딩 프로그램 - 테란 던전 소개 가이드</span>
+    <span class="footer-r">BUILD 2025.04 · TERRAN HUD ENGINE</span>
+  </div>
+
+  <!-- ============================================================
+       MODAL
+       ============================================================ -->
+  <div class="modal-backdrop" id="modalBackdrop" onclick="onBackdropClick(event)">
+    <div class="modal-box" id="modalBox">
+
+      <div class="modal-head">
+        <div class="modal-head-info">
+          <div class="modal-icon-box" id="mIcon"></div>
+          <div>
+            <div class="modal-tag"  id="mTag"></div>
+            <div class="modal-name" id="mName"></div>
+          </div>
+        </div>
+        <button class="btn-close" onclick="closeModal()">✕</button>
+      </div>
+
+      <div class="modal-tabs" id="modalTabs"></div>
+      <div class="modal-body" id="modalBody"></div>
+
+    </div>
+  </div>
+
+
+  <script>
+    // ================================================================
+    // SITE CONFIG — edit hero text and mission stats here
+    // ================================================================
+    const siteConfig = {
+      heroStory: `"테란 본거지에 침입했다. 이제, 무너뜨릴 차례다."
+
+먼 옛날, 지구에서 추방된 인류는 코프룰루 항성계에 '테란' 문명을 세운다. 그러나 생존이라는 명분 하에서 인간을 병기로 개조하는 잔혹한 실험, '고스트 프로젝트'를 비밀리에 실시하고 있다.
+
+지구 집정 연합(UED)은 이 만행을 저지하기 위해 당신을 파견했다. 테란 본거지에 잠입하여 고스트 연구 시설을 파괴하고, 그들을 지휘하는 총사령관을 무너뜨려라.
+
+임무 코드명: 통제구역 404. 작전을 개시한다.`,
+
+      missionStats: [
+        { label: "챕터 수",   value: "4",    unit: "구역" },
+        { label: "임무 코드", value: "404",  unit: ""     },
+        { label: "소속 기관", value: "UED",  unit: ""     },
+        { label: "목표 대상", value: "사령관", unit: ""   }
+      ]
+    };
+
+
+    // ================================================================
+    // DUNGEON DATA — add / edit chapters here
+    // ================================================================
+    const dungeonData = {
+      chapters: [
+        {
+          id: 1,
+          icon: "🔦",
+          tag: "CHAPTER 01",
+          title: "통신장비 부품 수집",
+          shortDesc: "테란 폐기물 처리장 곳곳을 탐색하며 망가진 통신장비 수리에 필요한 부품을 수집하라.",
+          difficulty: "hard",
+          difficultyLabel: "어려움",
+          story: `비밀리에 코프룰루 항성계에 잠입하는 데는 성공하였으나, 본부와 소통을 위한 통신장비가 망가졌습니다.
+눈앞의 테란 폐기물 처리장 곳곳을 탐색하며 통신장비 수리를 위한 부품을 수집해야 합니다.`,
+          environment: `축축하고 이끼가 잔뜩 낀 미로 같은 지형입니다.
+어둠 속에 수많은 함정과 몬스터가 도사리고 있으며, 플레이어의 몬스터 토벌 능력과 미로 클리어 능력을 동시에 요구합니다.`,
+          monsters: [
+            { icon: "🤖", name: "테란 정찰로봇",    desc: "날렵하고 작은 이족보행 로봇. 생명체를 감지하는 단안 센서를 달고 있다.",                                       threat: "low",  threatLabel: "쉬움" },
+            { icon: "☣️", name: "오염된 폐기물 로봇", desc: "폐기물 처리장의 버려진 금속 틈에서 탄생했다. 철판과 드럼통 사이로 초록 액체가 끊임없이 흘러나온다.", threat: "mid", threatLabel: "보통" }
+          ],
+          puzzle: [
+            { step: 1, title: "미로 진입",    desc: "폐기물 처리장 입구에서 어둠 속으로 진입하라. 랜턴 없이는 시야 확보가 불가능하다." },
+            { step: 2, title: "부품 수집",    desc: "미로 곳곳에 흩어진 통신장비 부품을 수집하라. 정찰 로봇을 주의하라." },
+            { step: 3, title: "미로 탈출",    desc: "모든 부품을 수집한 후 미로를 탈출하여 장비를 수리하라." }
+          ],
+          tips: [
+            "미로 내부는 앞이 전혀 보이지 않을 만큼 어둡다. 지급된 랜턴을 반드시 활용하라.",
+            "2인 1조로 짝을 이루어 한 명은 시야를 확보하고, 한 명이 몬스터를 처치하면 훨씬 수월하다.",
+          ]
+        },
+        {
+          id: 2,
+          icon: "🧪",
+          tag: "CHAPTER 02",
+          title: "고스트 연구 시설 파괴",
+          shortDesc: "테란의 잔혹한 실험, 고스트 프로젝트를 종식시켜라. 연구소에 잠입하여 시설을 파괴하라.",
+          difficulty: "normal",
+          difficultyLabel: "보통",
+          story: `"아아. 들리는가? 여기는 본부네. 지금 테란에서는 사이오닉 능력이 있는 아이들을 데려가 전투병기 '고스트'로 개조하고 있다네. 자네들이 연구소에 잠입하여 이 비인간적인 만행을 끝내주게."
+
+— UED 해군 제독 듀갈의 지령`,
+          environment: `넓고 큰 연구소 내부에 있는 수많은 방을 탐색하며 연구 시설을 찾아야 합니다.
+방마다 있는 경비 로봇과 연구 시설 앞을 수호하는 거대 경비 로봇 '토르'를 제거하고 시설을 파괴하십시오.`,
+          monsters: [
+            { icon: "🪖", name: "테란 해군로봇", desc: "테란의 병사 마린(해병대원)이 강화된 로봇 수트를 장착하였다.",                          threat: "mid",  threatLabel: "보통" },
+            { icon: "🔥", name: "파이어뱃",      desc: "강한 화염을 내뿜는 화염방사병이 강화된 로봇 수트를 장착하였다.",                          threat: "high", threatLabel: "높음" },
+            { icon: "🦾", name: "토르",           desc: "거대한 대형 이족보행 로봇. 어깨에 미사일 포드를 달고 있다. 연구 시설의 최종 경비 보스.", threat: "high", threatLabel: "높음" }
+          ],
+          puzzle: [
+            { step: 1, title: "연구소 침투",       desc: "경비 로봇들을 피하거나 처치하며 연구소 최상층으로 이동하라." },
+            { step: 2, title: "폭탄 획득",  desc: "연구소 최상층에서 폭탄 아이템을 찾아라." },
+            { step: 3, title: "연구 시설 파괴",    desc: "연구 시설로 이동하여 봉인석에 폭탄을 넣어라. 입구를 지키는 '토르'를 모든 플레이어가 협공하여 먼저 제압해야 한다." }
+          ],
+          tips: [
+            "토르는 혼자 상대하면 절대 안 된다. 모든 플레이어가 반드시 협공해야 한다.",
+            "파이어뱃의 화염 공격은 근접 범위에서 강력하다. 원거리를 유지하며 공격하라.",
+            "시설 파괴가 끝나면 빠르게 진입했던 장소로 복귀하라."
+          ]
+        },
+        {
+          id: 3,
+          icon: "🛡️",
+          tag: "CHAPTER 03",
+          title: "통신장비 보호",
+          shortDesc: "연구 시설 파괴에 분노한 테란 군대가 몰려온다. 5번의 웨이브를 버티고 통신장비를 사수하라.",
+          difficulty: "hard",
+          difficultyLabel: "어려움",
+          story: `연구 시설 파괴에 분노한 테란 군대가 몰려오고 있습니다.
+몰려오는 몬스터를 막아내어 지구 귀환을 위해 꼭 필요한 통신장비를 보호하십시오.`,
+          environment: `어둡고 넓은 폐병원 로비입니다.
+어지럽게 널브러진 기자재들 사이로 사방에서 적들이 몰려옵니다. 총 5개의 몬스터 웨이브로 구성되며, 몬스터가 일정 범위 이상으로 들어오면 통신장비가 피해를 입습니다.`,
+          monsters: [
+            { icon: "🤖", name: "테란 정찰로봇", desc: "날렵하고 작은 이족보행 로봇. 생명체를 감지하는 단안 센서를 달고 있다.", threat: "low",  threatLabel: "쉬움" },
+            { icon: "☣️", name: "오염된 폐기물 로봇", desc: "폐기물 처리장의 버려진 금속 틈에서 탄생했다. 철판과 드럼통 사이로 초록 액체가 끊임없이 흘러나온다.", threat: "mid", threatLabel: "보통" },
+            { icon: "🪖", name: "테란 해군로봇", desc: "테란의 기본 병사 마린(해병대원)이 강화된 로봇 수트를 장착하였다.",    threat: "mid",  threatLabel: "보통" },
+            { icon: "🔥", name: "파이어뱃",      desc: "강한 화염을 내뿜는 화염방사병이 강화된 로봇 수트를 장착하였다.",    threat: "high", threatLabel: "높음" },
+          ],
+          puzzle: [
+            { step: 1, title: "방어선 구축",              desc: "파란 안전구역 안에서 위치를 잡고 통신장비 주변에 방어선을 구축하라." },
+            { step: 2, title: "웨이브 방어 (1~3웨이브)",  desc: "몰려오는 정찰로봇과 폐기물 로봇을 처치하라. 통신장비 접근을 절대 허용하지 마라." },
+            { step: 3, title: "최종 웨이브 격퇴 (4~5웨이브)", desc: "해군로봇과 파이어뱃이 등장하는 강화 웨이브. 모든 플레이어가 협동하여 통신장비를 지켜내라." }
+          ],
+          tips: [
+            "폐병원 바닥의 '파란 구역'은 안전구역이다. 안전구역 밖으로 나가면 피해를 입는다.",
+            "동료 플레이어들과 협력하여 사방에서 오는 몬스터를 분담 처치하라.",
+            "통신장비가 피해를 입으면 임무 실패로 이어진다. 통신장비 주변을 최우선으로 사수하라.",
+          ]
+        },
+        {
+          id: 4,
+          icon: "💀",
+          tag: "CHAPTER 04",
+          title: "테란 본거지 공격",
+          shortDesc: "테란의 폭주를 막기 위해서는 본거지를 무너뜨려야 한다. 테란의 총사령관을 쓰러뜨려 이 비극을 끝내라.",
+          difficulty: "extreme",
+          difficultyLabel: "극한",
+          story: `테란의 폭주를 완전히 막기 위해, 연합을 지휘하는 사령관을 쓰러뜨리고 이 비극을 끝내십시오.
+그의 폭발적인 힘 앞에서 살아남은 요원은 없습니다. 사령관의 힘을 약화시킬 방법을 반드시 찾아야 합니다.`,
+          environment: `커맨드 센터는 넓고 깊은 지하 벙커로, 수많은 방과 복잡한 지형으로 구성됩니다.
+최종 목적지인 사령관실은 넓고 트인 개방적인 지형입니다. 사령관은 이 공간 전체를 활용하여 플레이어를 압박합니다.`,
+          monsters: [
+            { icon: "💀", name: "테란 총사령관 (최종 보스)", desc: "사이오닉 에너지 방출 / 자기장 조정 / 피격 반격 / 마지막 발악 — 4가지 패턴을 가진 최강의 적.", threat: "boss", threatLabel: "최종 보스" }
+          ],
+          puzzle: [
+            { step: 1, title: "봉인구 수집",    desc: "사령관실로 나아가기 전, 지하 벙커 최하층에서 봉인구를 수집하라. 수집 개수에 따라 사령관의 힘이 제한된다." },
+            { step: 2, title: "사령관실 진입",  desc: "봉인구를 모두 수집한 후 사령관실로 진입하라. 들어가는 순간 전투가 시작된다." },
+            { step: 3, title: "총사령관 격파",  desc: "사령관은 체력이 400 이하로 떨어지는 첫 순간, 다시 1,500까지 회복하며 마지막 발악을 시작한다. 끝까지 집중을 유지하라." }
+          ],
+          tips: [
+            "반드시 봉인구를 찾아 사령관의 힘을 제한한 후 전투에 임하라.",
+            "사이오닉 에너지 방출: 원형으로 퍼지는 초록 구체를 재빠르게 회피하라.",
+            "자기장 조정: 일정 범위를 벗어나면 사령관에게 강제로 끌려온다. 적정 거리를 유지하라.",
+            "피격 반격: 입힌 피해의 25%가 반사된다. 무리한 근접 연타는 금물이다.",
+            "마지막 발악(HP 400↓): HP 1,500 회복 + 이동속도 급증. 당황하지 말고 대비하라.",
+            "자만은 당신을 위험에 빠뜨릴 것이다. 명심하라!"
+          ]
+        }
+      ]
+    };
+
+
+    // ================================================================
+    // RENDER HELPERS
+    // ================================================================
+
+    const diffClassMap   = { easy: 'badge-easy', normal: 'badge-normal', hard: 'badge-hard', extreme: 'badge-extreme' };
+    const threatClassMap = { low: 'threat-low',  mid:    'threat-mid',   high: 'threat-high', boss: 'threat-boss'     };
+
+    // Tab definitions — edit labels/icons here
+    const TAB_DEFS = [
+      { key: 'story',       icon: '📖', label: '스토리'   },
+      { key: 'environment', icon: '🗺️', label: '환경'     },
+      { key: 'monsters',    icon: '⚔️', label: '몬스터'   },
+      { key: 'puzzle',      icon: '🔐', label: '퍼즐'     },
+      { key: 'tips',        icon: '💡', label: '클리어 팁' }
+    ];
+
+
+    // ── Hero section ──────────────────────────────────────────────
+    function renderHero() {
+      document.getElementById('heroStory').textContent = siteConfig.heroStory;
+
+      document.getElementById('statGrid').innerHTML = siteConfig.missionStats.map(s => `
+        <div class="stat-cell">
+          <div class="stat-label">${s.label}</div>
+          <div class="stat-value">${s.value}<span class="stat-unit">${s.unit}</span></div>
+        </div>
+      `).join('');
+    }
+
+
+    // ── Chapter grid ──────────────────────────────────────────────
+    function renderChapters() {
+      document.getElementById('chapterGrid').innerHTML = dungeonData.chapters.map((ch, idx) => `
+        <div class="chapter-card" onclick="openModal(${idx})">
+          <div class="card-bg-num">${String(ch.id).padStart(2, '0')}</div>
+          <div class="card-icon-wrap">${ch.icon}</div>
+          <div class="card-tag">${ch.tag}</div>
+          <div class="card-title">${ch.title}</div>
+          <div class="card-desc">${ch.shortDesc}</div>
+          <div class="card-badges">
+            <span class="badge ${diffClassMap[ch.difficulty]}">난이도: ${ch.difficultyLabel}</span>
+            <span class="badge badge-neutral">${ch.monsters.length}종 몬스터</span>
+          </div>
+          <div class="card-enter">▶ 상세 보기</div>
+        </div>
+      `).join('');
+    }
+
+
+    // ── Modal body panels ─────────────────────────────────────────
+    function buildModalHTML(ch) {
+      // story panel
+      const storyHTML = `
+        <div class="tab-pane active" data-tab="story">
+          <div class="c-block">
+            <div class="c-block-title">스토리 · NARRATIVE</div>
+            <p class="c-block-text">${escHtml(ch.story).replace(/\n/g, '<br>')}</p>
+          </div>
+        </div>`;
+
+      // environment panel
+      const envHTML = `
+        <div class="tab-pane" data-tab="environment">
+          <div class="c-block">
+            <div class="c-block-title">환경 정보 · ENVIRONMENT DATA</div>
+            <p class="c-block-text">${escHtml(ch.environment).replace(/\n/g, '<br>')}</p>
+          </div>
+        </div>`;
+
+      // monsters panel
+      const monsHTML = `
+        <div class="tab-pane" data-tab="monsters">
+          <div class="c-block">
+            <div class="c-block-title">몬스터 목록 · THREAT ANALYSIS</div>
+            <ul class="monster-list">
+              ${ch.monsters.map(m => `
+                <li class="monster-row">
+                  <span class="m-icon">${m.icon}</span>
+                  <div class="m-info">
+                    <div class="m-name">${escHtml(m.name)}</div>
+                    <div class="m-desc">${escHtml(m.desc)}</div>
+                  </div>
+                  <span class="m-threat ${threatClassMap[m.threat]}">위협: ${escHtml(m.threatLabel)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>`;
+
+      // puzzle panel
+      const puzzleHTML = `
+        <div class="tab-pane" data-tab="puzzle">
+          <div class="c-block">
+            <div class="c-block-title">퍼즐 공략 · PUZZLE SEQUENCE</div>
+            ${ch.puzzle.map(p => `
+              <div class="puzzle-step">
+                <div class="step-num">${p.step}</div>
+                <div>
+                  <div class="step-title">${escHtml(p.title)}</div>
+                  <div class="step-desc">${escHtml(p.desc)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+
+      // tips panel
+      const tipsHTML = `
+        <div class="tab-pane" data-tab="tips">
+          <div class="c-block">
+            <div class="c-block-title">클리어 팁 · TACTICAL TIPS</div>
+            <ul class="tip-list">
+              ${ch.tips.map((t, i) => `
+                <li class="tip-row">
+                  <span class="tip-num">${String(i + 1).padStart(2, '0')}.</span>
+                  <span class="tip-text">${escHtml(t)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </div>
+        </div>`;
+
+      return storyHTML + envHTML + monsHTML + puzzleHTML + tipsHTML;
+    }
+
+    // Minimal HTML escape to prevent XSS from data strings
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+
+    // ================================================================
+    // MODAL LOGIC
+    // ================================================================
+
+    function openModal(idx) {
+      const ch = dungeonData.chapters[idx];
+
+      document.getElementById('mIcon').textContent = ch.icon;
+      document.getElementById('mTag').textContent  = ch.tag;
+      document.getElementById('mName').textContent = ch.title;
+
+      // Render tabs
+      document.getElementById('modalTabs').innerHTML = TAB_DEFS.map((t, i) => `
+        <button class="m-tab ${i === 0 ? 'active' : ''}" onclick="switchTab('${t.key}', this)">
+          <span class="t-icon">${t.icon}</span>${t.label}
+        </button>
+      `).join('');
+
+      // Render panels
+      document.getElementById('modalBody').innerHTML = buildModalHTML(ch);
+
+      document.getElementById('modalBackdrop').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modalBackdrop').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function onBackdropClick(e) {
+      if (e.target === document.getElementById('modalBackdrop')) closeModal();
+    }
+
+    function switchTab(key, btn) {
+      document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.tab-pane').forEach(p => {
+        p.classList.toggle('active', p.dataset.tab === key);
+      });
+    }
+
+    // Close modal on Escape
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+
+    // ================================================================
+    // UTILITIES
+    // ================================================================
+
+    function scrollToChapters() {
+      document.getElementById('chapterAnchor').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Live clock
+    function updateClock() {
+      const n = new Date();
+      const pad = v => String(v).padStart(2, '0');
+      document.getElementById('sysTime').textContent =
+        `${pad(n.getHours())}:${pad(n.getMinutes())}:${pad(n.getSeconds())}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // Sound toggle (visual-only)
+    let soundOn = false;
+    function toggleSound() {
+      soundOn = !soundOn;
+      document.getElementById('btnSound').textContent = soundOn ? '🔊\u00A0사운드' : '🔇\u00A0사운드';
+    }
+
+
+    // ================================================================
+    // INIT
+    // ================================================================
+    renderHero();
+    renderChapters();
+  </script>
+
+</body>
+</html>
